@@ -101,14 +101,27 @@ i_table_pos = input.string("Top Right", "Dashboard Position",
      options=["Top Right", "Top Left", "Bottom Right", "Bottom Left"], group=grpP)
 i_text_size = input.string("Small", "Text Size",
      options=["Tiny", "Small", "Normal"], group=grpP)
+i_theme     = input.string("Auto", "Panel Theme",
+     options=["Auto", "Dark", "Light"], group=grpP,
+     tooltip="Colors of the badge and dashboard. Auto follows the chart background. Candle colors don't change.")
 
 grpAL = "Alerts"
 i_alert_detail = input.bool(false, "Detailed Alert Message", group=grpAL,
      tooltip="The 'ACT: Trend On' and 'ACT: Trend Off' alert conditions work without this. ON adds one alert() carrying direction, source, grade and stance, so a single 'Any alert() function call' alert covers both.")
 
-color clr_warn = #FF9800
-color clr_neut = #787B86
-color clr_text = #D1D4DC
+// Panel theme. Auto reads the chart background's brightness.
+float _bg_luma = (0.299 * color.r(chart.bg_color) + 0.587 * color.g(chart.bg_color) + 0.114 * color.b(chart.bg_color)) / 255
+bool is_light = i_theme == "Light" or (i_theme == "Auto" and _bg_luma > 0.5)
+
+color clr_warn   = #FF9800
+color clr_neut   = #787B86
+color clr_text   = is_light ? #131722 : #D1D4DC
+color clr_strong = is_light ? #131722 : color.white
+color clr_mid    = is_light ? #5D606B : color.silver
+color clr_panel  = is_light ? color.new(color.white, 10) : color.new(color.black, 20)
+color clr_hdr_bg = is_light ? color.rgb(225, 228, 235) : color.rgb(20, 20, 35)
+color clr_row_bg = is_light ? color.rgb(242, 243, 246) : color.rgb(30, 30, 45)
+color clr_sep_bg = is_light ? color.rgb(200, 204, 212) : color.rgb(50, 50, 65)
 
 
 // =============================================================================
@@ -801,7 +814,7 @@ f_open_clr(float o) =>
 
 if i_show_badge and barstate.islast
     var table badge = table.new(f_table_pos(i_badge_pos), 6, 1,
-         bgcolor=color.new(color.black, 20), frame_color=color.new(color.gray, 60), frame_width=1,
+         bgcolor=clr_panel, frame_color=color.new(color.gray, 60), frame_width=1,
          border_color=color.new(color.black, 100), border_width=0)
     sz = f_text_size(i_text_size)
     if ladder_ok
@@ -841,53 +854,53 @@ f_tf_row(string bt, bool if_b, bool if_s, float o) =>
 
 if i_show_dash and barstate.islast
     var table dash = table.new(f_table_pos(i_table_pos), 2, 11,
-         bgcolor=color.new(color.black, 20), border_width=1)
+         bgcolor=clr_panel, border_width=1)
     sz = f_text_size(i_text_size)
-    color hdr_bg = color.rgb(20, 20, 35)
-    color row_bg = color.rgb(30, 30, 45)
+    color hdr_bg = clr_hdr_bg
+    color row_bg = clr_row_bg
     int row = 0
 
-    table.cell(dash, 0, row, "LADDER", text_color=color.white, text_size=sz, bgcolor=hdr_bg)
+    table.cell(dash, 0, row, "LADDER", text_color=clr_strong, text_size=sz, bgcolor=hdr_bg)
     table.cell(dash, 1, row, lad_name + (lad_locked ? " (locked)" : " (auto)") + " | " + lbl_t + " " + lbl_s1 + " " + lbl_s2 + " " + lbl_d1 + " " + lbl_d2,
          text_color=ladder_ok ? clr_neut : clr_warn, text_size=sz, bgcolor=row_bg)
     row += 1
 
     string dir_str = trend_dir == 1 ? "BULL" : trend_dir == -1 ? "BEAR" : "---"
-    table.cell(dash, 0, row, "TREND", text_color=color.white, text_size=sz, bgcolor=hdr_bg)
+    table.cell(dash, 0, row, "TREND", text_color=clr_strong, text_size=sz, bgcolor=hdr_bg)
     table.cell(dash, 1, row, dir_str + " | " + trend_src, text_color=f_dir_clr(trend_dir), text_size=sz, bgcolor=row_bg)
     row += 1
 
     color stance_clr = stance == 0 ? clr_warn : stance == 1 ? clr_neut : f_dir_clr(trend_dir)
-    table.cell(dash, 0, row, "STANCE", text_color=color.white, text_size=sz, bgcolor=hdr_bg)
+    table.cell(dash, 0, row, "STANCE", text_color=clr_strong, text_size=sz, bgcolor=hdr_bg)
     table.cell(dash, 1, row, stance_name + " | " + stance_why, text_color=stance_clr, text_size=sz, bgcolor=row_bg)
     row += 1
 
-    color score_clr = score >= 10 ? color.white : score >= 7 ? color.silver : clr_neut
-    table.cell(dash, 0, row, "GRADE", text_color=color.white, text_size=sz, bgcolor=hdr_bg)
+    color score_clr = score >= 10 ? clr_strong : score >= 7 ? clr_mid : clr_neut
+    table.cell(dash, 0, row, "GRADE", text_color=clr_strong, text_size=sz, bgcolor=hdr_bg)
     table.cell(dash, 1, row, grade + " (" + str.tostring(score) + " pts, shade " + str.tostring(shade) + ")", text_color=score_clr, text_size=sz, bgcolor=row_bg)
     row += 1
 
     string taken = t_active_broke_high and t_active_broke_low ? ", both sides taken" : t_active_broke_high ? ", high taken" : t_active_broke_low ? ", low taken" : ""
-    table.cell(dash, 0, row, "TRIGGER " + lbl_t, text_color=color.white, text_size=sz, bgcolor=hdr_bg)
+    table.cell(dash, 0, row, "TRIGGER " + lbl_t, text_color=clr_strong, text_size=sz, bgcolor=hdr_bg)
     table.cell(dash, 1, row, "prior bar " + t_prev_type + taken, text_color=clr_neut, text_size=sz, bgcolor=row_bg)
     row += 1
 
     string ix_str = ix1_lbl + " " + ix1_bt + ", " + ix2_lbl + " " + ix2_bt + ", " + ix3_lbl + " " + ix3_bt + " (" + str.tostring(sync_bull) + " up, " + str.tostring(sync_bear) + " down)"
-    table.cell(dash, 0, row, "INDEXES", text_color=color.white, text_size=sz, bgcolor=hdr_bg)
+    table.cell(dash, 0, row, "INDEXES", text_color=clr_strong, text_size=sz, bgcolor=hdr_bg)
     table.cell(dash, 1, row, ix_str, text_color=sync_bull >= 2 ? i_clr_bull : sync_bear >= 2 ? i_clr_bear : clr_neut, text_size=sz, bgcolor=row_bg)
     row += 1
 
-    table.cell(dash, 0, row, "", bgcolor=color.rgb(50, 50, 65))
-    table.cell(dash, 1, row, "", bgcolor=color.rgb(50, 50, 65))
+    table.cell(dash, 0, row, "", bgcolor=clr_sep_bg)
+    table.cell(dash, 1, row, "", bgcolor=clr_sep_bg)
     row += 1
-    table.cell(dash, 0, row, lbl_d2, text_color=color.white, text_size=sz, bgcolor=hdr_bg)
+    table.cell(dash, 0, row, lbl_d2, text_color=clr_strong, text_size=sz, bgcolor=hdr_bg)
     table.cell(dash, 1, row, f_tf_row(d2_type, d2_if_b, d2_if_s, d2_o), text_color=d2_if_b ? i_clr_bull : d2_if_s ? i_clr_bear : clr_neut, text_size=sz, bgcolor=row_bg)
     row += 1
-    table.cell(dash, 0, row, lbl_d1, text_color=color.white, text_size=sz, bgcolor=hdr_bg)
+    table.cell(dash, 0, row, lbl_d1, text_color=clr_strong, text_size=sz, bgcolor=hdr_bg)
     table.cell(dash, 1, row, f_tf_row(d1_type, d1_if_b, d1_if_s, d1_o), text_color=d1_if_b ? i_clr_bull : d1_if_s ? i_clr_bear : clr_neut, text_size=sz, bgcolor=row_bg)
     row += 1
-    table.cell(dash, 0, row, lbl_s2, text_color=color.white, text_size=sz, bgcolor=hdr_bg)
+    table.cell(dash, 0, row, lbl_s2, text_color=clr_strong, text_size=sz, bgcolor=hdr_bg)
     table.cell(dash, 1, row, f_tf_row(s2_type, s2_if_b, s2_if_s, s2_o), text_color=s2_if_b ? i_clr_bull : s2_if_s ? i_clr_bear : clr_neut, text_size=sz, bgcolor=row_bg)
     row += 1
-    table.cell(dash, 0, row, lbl_s1, text_color=color.white, text_size=sz, bgcolor=hdr_bg)
+    table.cell(dash, 0, row, lbl_s1, text_color=clr_strong, text_size=sz, bgcolor=hdr_bg)
     table.cell(dash, 1, row, f_tf_row(s1_type, s1_if_b, s1_if_s, s1_o), text_color=s1_if_b ? i_clr_bull : s1_if_s ? i_clr_bear : clr_neut, text_size=sz, bgcolor=row_bg)

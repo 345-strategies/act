@@ -62,6 +62,7 @@ ACT reads three related markets, picked from the chart symbol by Auto: ES, NQ, R
 
 - **Alignment dots** (off by default, bottom of the chart): one per Trigger, State 1, State 2 and Direction 1 timeframe. Bright = the chart and all three indexes hold beyond that timeframe's prior high (bull) or low (bear); dim = three of the four.
 - **Dashboard** (off by default): ladder, trend and its source, stance and why, grade, the Trigger bar, the indexes, and each ladder timeframe's bar type.
+- **Panel Theme:** Auto (follows the chart background), Dark or Light, for the badge and dashboard. Candle colors are the same in both.
 - **Alerts:** `ACT: Trend On` fires when candles go from grey to colored, and `ACT: Trend Off` the other way, both on bar close. Turn on Detailed Alert Message for one `alert()` that carries direction, source, grade, stance and ladder.
 
 ## No repaint
