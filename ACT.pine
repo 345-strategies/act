@@ -1,5 +1,5 @@
 //@version=6
-// ACT: Alignment-Colored Trend - v1.0.0
+// ACT: Alignment-Colored Trend - v1.0.1
 //
 // This Source Code Form is subject to the terms of the Mozilla Public
 // License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -660,9 +660,10 @@ else if d1_inside and not d1_live_bull and not d1_live_bear
     else
         stance := 0
         stance_why := "no direction"
-else if (bias_bull and ((d1_fb and d2_if_b) or (d1_if_b and d2_fb))) or (bias_bear and ((d1_fs and d2_if_s) or (d1_if_s and d2_fs)))
+else if (bias_bull and ((d1_fb and (d2_if_b or d2_fb)) or (d1_if_b and d2_fb))) or (bias_bear and ((d1_fs and (d2_if_s or d2_fs)) or (d1_if_s and d2_fs)))
     stance := 0
-    stance_why := lbl_dir + " break failing"
+    bool both_failing = bias_bull ? (d1_fb and d2_fb) : (d1_fs and d2_fs)
+    stance_why := lbl_dir + (both_failing ? " both failing" : " break failing")
 else if bias_bull or bias_bear
     bool cat_d2 = bias_bull ? d2_live_bull : d2_live_bear
     bool cat_d1 = bias_bull ? d1_live_bull : d1_live_bear
