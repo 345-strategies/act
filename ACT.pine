@@ -1,5 +1,5 @@
 //@version=6
-// ACT: Alignment-Colored Trend - v1.0.1
+// ACT: Alignment-Colored Trend - v1.1.0
 //
 // This Source Code Form is subject to the terms of the Mozilla Public
 // License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -14,7 +14,8 @@
 //              When the two disagree, a directional State 2 bar (2u/3u or
 //              2d/3d) sets the direction instead: counter-trend, blue/purple.
 //   Grey       No direction, or the Direction timeframes are conflicting,
-//              both inside, or failing.
+//              both inside, or failing. Drawn hollow by default, so every
+//              filled candle has a direction.
 //   Shade      0 to 11 points, faint to solid:
 //              Cascade  an index holding a break of its prior Direction 1 bar
 //                       in the trend direction = 7, else State 2 = 3, else
@@ -83,6 +84,8 @@ grpC = "Candles"
 i_color_bars    = input.bool(true, "Color Bars", group=grpC)
 i_gray_inactive = input.bool(true, "Grey When No Trend", group=grpC,
      tooltip="ON paints bars with no trend neutral grey. OFF leaves them in the chart's own candle colors.")
+i_grey_style    = input.string("Hollow", "Grey Candles", options=["Hollow", "Solid"], group=grpC,
+     tooltip="Hollow: no-trend candles are drawn as a grey outline with an empty body, so every filled candle has a direction. Solid: v1.0 style, the chart's own candle painted faint grey. Display only: which bars are grey does not change. Hollow draws its own candle, so it shows as a candle even on a bar or line chart.")
 i_peak_score    = input.int(10, "Peak Colors At", minval=8, maxval=11, group=grpC,
      tooltip="Shade (0 to 11) at which bull and bear candles switch to the peak colors. 10 = a Direction 1 cascade with State 2 and State 1 both breaking with the trend. Counter-trend candles keep their own colors at any strength.")
 i_clr_bull     = input.color(#4CAF50, "Bull", group=grpC)
@@ -791,6 +794,13 @@ if i_color_bars and ladder_ok
     else if i_gray_inactive and is_grey
         bar_clr := color.new(i_clr_inactive, 62)
 barcolor(bar_clr)
+
+// Hollow grey (v1.1.0, display only): the same bars the branch above paints
+// grey, redrawn as an outline over the chart's candle. The body is the chart
+// background, opaque, so the chart's own candle never shows through it.
+bool hollow_grey = i_color_bars and ladder_ok and i_gray_inactive and is_grey and i_grey_style == "Hollow"
+plotcandle(hollow_grey ? open : na, hollow_grey ? high : na, hollow_grey ? low : na, hollow_grey ? close : na,
+     "No-Trend Candles", color=chart.bg_color, wickcolor=i_clr_inactive, bordercolor=i_clr_inactive, editable=false, display=display.pane)
 
 // Data window only: the per-bar reading, for inspection and value export.
 // Trend is the paint direction (1 bull, -1 bear, 0 grey), not the raw bias.
