@@ -12,9 +12,11 @@ It is display only: no orders, no entry signals, no strategy. It shows how much 
 | Faint to solid | How much confirms it, 0 to 11 points (see Shade) |
 | Lime / pink | Peak: a Direction-level breakout with both State timeframes breaking the same way |
 | Blue / purple | Counter-trend: the two Direction timeframes disagree, and a State 2 breakout sets the direction |
-| Grey | No trend: no direction, or the Direction timeframes are conflicting, both inside, or failing |
+| Hollow grey | No trend: no direction, or the Direction timeframes are conflicting, both inside, or failing. Every filled candle has a direction |
 
 Green and red always mean bull and bear, never good and bad.
+
+Grey candles are drawn hollow by default (Candles > Grey Candles). Set it to Solid for the v1.0 look, the chart's own candle painted faint grey. Either way the same bars are grey: it is a display setting only.
 
 **Shade** adds up:
 
